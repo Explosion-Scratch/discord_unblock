@@ -40,7 +40,7 @@ client.on("ready", () => {
     channel = client.channels.cache.get('789662825215426568');
 })
 client.on("message", function(message) {
-    test = (id) => {
+    findUser = (id) => {
         return client.users.cache.find(u => u.id === id)
     }
     if (message.content === "ping" && !message.author.bot) {
@@ -51,7 +51,7 @@ client.on("message", function(message) {
         author: message.author.tag,
         content: toHTML(emoji.emojify(message.content), {
             discordCallback: {
-                user: node => '@' + test(node.id).username
+                user: node => '@' + findUser(node.id).username
             }
         }),
         color: message.member.displayHexColor
