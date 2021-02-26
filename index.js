@@ -47,7 +47,7 @@ client.on("message", function (message) {
     const timeTaken = Date.now() - message.createdTimestamp;
     message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
   }
-  let attachments = message.attachments;
+  let attachments = message.attachments || [];
 
   io.emit("message", {
     author: message.author.tag,
