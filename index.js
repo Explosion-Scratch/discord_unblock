@@ -39,23 +39,26 @@ client.on("message", function (message) {
   findUser = (id) => {
     return client.users.cache.find((u) => u.id === id);
   };
-	if (message.content.includes('change-nick ')) {
-			message.guild.me.setNickname(message.content.replace("change-nick  ", ""))
-			return message.channel.send('Changed!');
-	}
+  if (message.content.includes("change-nick ")) {
+    message.guild.me.setNickname(message.content.replace("change-nick  ", ""));
+    return message.channel.send("Changed!");
+  }
   if (message.content === "ping" && !message.author.bot) {
     const timeTaken = Date.now() - message.createdTimestamp;
     message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
   }
+  let attachments = message.attachments;
+
   io.emit("message", {
     author: message.author.tag,
-		time: (new Date).toString(),
+    time: new Date().toString(),
     content: toHTML(emoji.emojify(message.content), {
       discordCallback: {
         user: (node) => "<b>@" + findUser(node.id).username + "</b>",
       },
     }),
     color: message.member ? message.member.displayHexColor : "#fff",
+    attachments: attachments,
   });
   app.get("/send", (req, res) => {
     channel.send(req.query.q);
