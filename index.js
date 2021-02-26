@@ -4,18 +4,14 @@ const express = require("express");
 const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
-const { parser, htmlOutput, toHTML } = require("discord-markdown");
+const {parser, htmlOutput, toHTML} = require("discord-markdown");
 const emoji = require("discord-emoji-converter");
 
 io.on("connection", (socket) => {
   console.log("a user connected");
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
+  socket.on("disconnect", () => { console.log("user disconnected"); });
 });
-app.get("/", (req, res) => {
-  res.sendFile(`${__dirname}/index.html`);
-});
+app.get("/", (req, res) => { res.sendFile(`${__dirname}/index.html`); });
 
 app.get("/send", (req, res) => {
   try {
@@ -32,17 +28,14 @@ app.get("/send", (req, res) => {
   }
 });
 var channel;
-client.on("ready", () => {
-  channel = client.channels.cache.get("789662825215426568");
-});
-client.on("message", function (message) {
-  findUser = (id) => {
-    return client.users.cache.find((u) => u.id === id);
-  };
-	if (message.content.includes('change-nick ')) {
-			message.guild.me.setNickname(message.content.replace("change-nick  ", ""))
-			return message.channel.send('Changed!');
-	}
+client.on("ready",
+          () => { channel = client.channels.cache.get("789662825215426568"); });
+client.on("message", function(message) {
+  findUser = (id) => { return client.users.cache.find((u) => u.id === id); };
+  if (message.content.includes('change-nick ')) {
+    message.guild.me.setNickname(message.content.replace("change-nick  ", ""))
+    return message.channel.send('Changed!');
+  }
   if (message.content === "ping" && !message.author.bot) {
     const timeTaken = Date.now() - message.createdTimestamp;
     message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
@@ -50,22 +43,18 @@ client.on("message", function (message) {
   let attachments = message.attachments
 
   io.emit("message", {
-    author: message.author.tag,
-		time: (new Date).toString(),
-    content: toHTML(emoji.emojify(message.content), {
-      discordCallback: {
-        user: (node) => "<b>@" + findUser(node.id).username + "</b>",
+    author : message.author.tag,
+    time : (new Date).toString(),
+    content : toHTML(emoji.emojify(message.content), {
+      discordCallback : {
+        user : (node) => "<b>@" + findUser(node.id).username + "</b>",
       },
     }),
-    color: message.member ? message.member.displayHexColor : "#fff",
-    attachments: attachments,
+    color : message.member ? message.member.displayHexColor : "#fff",
+    attachments : attachments,
   });
-  app.get("/send", (req, res) => {
-    channel.send(req.query.q);
-  });
+  app.get("/send", (req, res) => { channel.send(req.query.q); });
 });
 
 client.login(process.env.BOT_TOKEN);
-http.listen(3000, () => {
-  console.log("Exploding on port 3000");
-});
+http.listen(3000, () => { console.log("Exploding on port 3000"); });
