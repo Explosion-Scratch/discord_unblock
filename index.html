@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.2/socket.io.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bijou.js@v6.3.3" type="module"></script>
+	<title>Send a message</title>
+</head>
+<body>
+	<div class="container">
+		<input type="text" placeholder="Send a message">
+		<ul id="messages"></ul>
+	</div>
+</body>
+</html>	
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+		font-family: Montserrat;
+		color: white;
+	}
+	body {
+		background: #333;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+	}
+	body::before, body::after {
+		content: "";
+		position: fixed;
+		top: 10vh;
+		right: 10vw;
+		z-index: -1000;
+		width: 30vw;
+		height: 30vw;
+		background: lightseagreen;
+		border-radius: 50%;
+    filter: blur(4px);
+	}
+	body::after {
+		bottom: 0;
+		left: 0;
+		transform: translate(-50%, -50%);
+		width: 50vw;
+		height: 50vw;
+		background-color: #1194bf;
+	}
+	.container {
+		width: 80vw;
+		max-width: 500px;
+		background: #0005;
+		padding: 40px;
+		border-radius: 10px;
+		backdrop-filter: blur(10px);
+	}
+  input {
+		color: white;
+    border-radius: 5px;
+		width: 100%;
+		padding: 15px;
+		outline: none;
+		background: #fff1;
+		border: 1px solid #333;
+		border-bottom: 3px solid lightseagreen;
+		margin-bottom: 10px;
+  }
+	ul#messages {
+		height: 70vh;
+		overflow: scroll;
+	}
+	ul#messages li {
+		list-style: none;
+		padding: 20px;
+		background: #0001;
+    border-radius: 2px;
+	}
+  ul#messages li:hover {
+		background: #0002;
+	}
+
+	input:focus {
+		box-shadow: 0 0 0 5px #0002;
+	}
+</style>
+<script>
+	const inp = document.querySelector("input[type='text']");
+	const msgs = document.querySelector("ul#messages");
+	msgs.innerHTML = localStorage.getItem("messages") || "";
+	msgs.scrollTop = msgs.scrollHeight - msgs.clientHeight;
+	const password = localStorage.getItem("password") || prompt("Password");
+	localStorage.setItem('password', password);
+  var socket = io();
+	socket.on("message", (message) => {
+		msgs.innerHTML += `<li><b style="color: ${message.color};">${message.author}</b> ${message.content}</li>`;
+		msgs.scrollTop = msgs.scrollHeight - msgs.clientHeight;
+		localStorage.setItem("messages", msgs.innerHTML)
+	})
+	inp.onkeyup = (e) => {
+		if (e.key === "Enter" && inp.value){
+			fetch(`/send?password=${password}&q=${escape(inp.value)}`).then(res => res.text()).then(text => {
+				if (text !== "Sent!"){
+					alert("There was an error, you may have the wrong password, or there may be a different error. Ask --Explosion--.")
+				} else {
+					inp.value = "";
+				}
+				console.log(text);
+			})
+		}
+	}
+</script>
