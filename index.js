@@ -33,7 +33,7 @@ app.get("/send", (req, res) => {
 });
 var channel;
 client.on("ready", () => {
-  channel = client.channels.cache.get("789662825215426568");
+  channel = client.channels.cache.get("785949076675362846");
 });
 client.on("message", function (message) {
   findUser = (id) => {
@@ -47,6 +47,8 @@ client.on("message", function (message) {
     const timeTaken = Date.now() - message.createdTimestamp;
     message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
   }
+  let attachments = message.attachments
+
   io.emit("message", {
     author: message.author.tag,
 		time: (new Date).toString(),
@@ -56,6 +58,7 @@ client.on("message", function (message) {
       },
     }),
     color: message.member ? message.member.displayHexColor : "#fff",
+    attachments: attachments,
   });
   app.get("/send", (req, res) => {
     channel.send(req.query.q);
