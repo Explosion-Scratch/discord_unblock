@@ -43,6 +43,14 @@ client.on("message", function(message) {
     findUser = (id) => {
         return client.users.cache.find(u => u.id === id)
     }
+		pingedUser = (message) => {
+			let user = message.match(/(@.+#[0-9]+)/);
+			if (user[1]){
+				return `<@${client.users.cache.find(u => u.username === pingeduserfromregex)}>`
+			} else {
+				return "";
+			}
+		}
     if (message.content === "ping" && !message.author.bot) {
         const timeTaken = Date.now() - message.createdTimestamp;
         message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
