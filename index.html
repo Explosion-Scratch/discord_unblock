@@ -5,12 +5,13 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.2/socket.io.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bijou.js@v6.3.3" type="module"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 	<title>Send a message</title>
 </head>
 <body>
 	<div class="container">
-		<input type="text" placeholder="Send a message">
 		<ul id="messages"></ul>
+		<input type="text" placeholder="Send a message" autofocus>
 	</div>
 </body>
 </html>	
@@ -67,7 +68,7 @@
 		background: #fff1;
 		border: 1px solid #333;
 		border-bottom: 3px solid lightseagreen;
-		margin-bottom: 10px;
+		margin-top: 10px;
   }
 	ul#messages {
 		height: 70vh;
@@ -75,14 +76,26 @@
 	}
 	ul#messages li {
 		list-style: none;
-		padding: 20px;
+		padding: 15px;
 		background: #0001;
     border-radius: 2px;
+		transition: background .3s ease, padding .3s ease;
 	}
   ul#messages li:hover {
 		background: #0002;
+		padding-top: 20px;
+		padding-bottom: 20px;
 	}
-
+	.d-spoiler {
+		transition: color .2s ease;
+		padding: 3px;
+		border-radius: 2px;
+		color: transparent;
+		background: #333;
+	}
+ li:hover .d-spoiler {
+		color: white;
+	}
 	input:focus {
 		box-shadow: 0 0 0 5px #0002;
 	}
@@ -94,6 +107,22 @@
   a {
     overflow-wrap: anywhere;
   }
+	li:hover #footer {
+		opacity: 1;
+	}
+	#footer {
+		transition: opacity .3s ease;
+		font-size: 10px;
+		color: #aaa;
+		opacity: 0;
+		display: block;
+		margin-top: 3px;
+	}
+	.hljs * {
+		font-family: monospace;
+		font-size: 12px;
+	}
+	.hljs{display:block;overflow-x:auto;padding:.5em;border-radius:4px;color:var(--header-secondary);-webkit-text-size-adjust:none;-moz-text-size-adjust:none;-ms-text-size-adjust:none;text-size-adjust:none}.hljs-comment,.hljs-quote{color:var(--interactive-muted)}.hljs-addition,.hljs-keyword,.hljs-selector-tag{color:#859900}.hljs-doctag,.hljs-literal,.hljs-meta .hljs-meta-string,.hljs-number,.hljs-regexp,.hljs-string{color:#2aa198}.hljs-name,.hljs-section,.hljs-selector-class,.hljs-selector-id,.hljs-title{color:#268bd2}.hljs-attr,.hljs-attribute,.hljs-class .hljs-title,.hljs-template-variable,.hljs-type,.hljs-variable{color:#b58900}.hljs-bullet,.hljs-link,.hljs-meta,.hljs-meta .hljs-keyword,.hljs-selector-attr,.hljs-selector-pseudo,.hljs-subst,.hljs-symbol{color:#cb4b16}.hljs-built_in,.hljs-deletion{color:#dc322f}.hljs-formula{background:#073642}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}
 </style>
 <script>
 	const inp = document.querySelector("input[type='text']");
@@ -104,13 +133,18 @@
 	localStorage.setItem('password', password);
   var socket = io();
 	socket.on("message", (message) => {
-		msgs.innerHTML += `<li><b style="color: ${message.color};">${message.author}</b> ${message.content}</li>`;
+		msgs.innerHTML += `<li><b style="color: ${message.color};">${message.author}</b> ${message.content}<span id="footer" data-time="${message.time}">a few seconds ago</span></li>`;
 		msgs.scrollTop = msgs.scrollHeight - msgs.clientHeight;
 		localStorage.setItem("messages", msgs.innerHTML)
 	})
+	setInterval(() => {
+		document.querySelectorAll("[data-time]").forEach(el => {
+			el.innerText = moment(el.getAttribute("data-time")).fromNow();
+		})
+	}, 1000)
 	inp.onkeyup = (e) => {
 		if (e.key === "Enter" && inp.value){
-			fetch(`/send?password=${password}&q=${escape(inp.value)}`).then(res => res.text()).then(text => {
+			fetch(`/send?password=${escape(password)}&q=${escape(inp.value)}`).then(res => res.text()).then(text => {
 				if (text !== "Sent!"){
 					alert("There was an error, you may have the wrong password, or there may be a different error. Ask --Explosion--.")
 				} else {
@@ -120,4 +154,36 @@
 			})
 		}
 	}
+	window.onkeyup = () => {
+		inp.focus();
+	}
+</script>
+<script>
+	function timeSince(date) {
+
+  var seconds = Math.floor((new Date() - date) / 1000);
+
+  var interval = seconds / 31536000;
+
+  if (interval > 1) {
+    return Math.floor(interval) + " years";
+  }
+  interval = seconds / 2592000;
+  if (interval > 1) {
+    return Math.floor(interval) + " months";
+  }
+  interval = seconds / 86400;
+  if (interval > 1) {
+    return Math.floor(interval) + " days";
+  }
+  interval = seconds / 3600;
+  if (interval > 1) {
+    return Math.floor(interval) + " hours";
+  }
+  interval = seconds / 60;
+  if (interval > 1) {
+    return Math.floor(interval) + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
+}
 </script>
