@@ -128,6 +128,7 @@
   li img, li video {
     max-width: 350px;
     height: auto;
+    padding-top: 4px;
 }
 </style>
 <script>
@@ -146,7 +147,7 @@
       atch += `<img src="${attachment.attachment}">`
     }
     }
-		msgs.innerHTML += `<li><b style="color: ${message.color};">${message.author}</b> ${message.content}<span id="footer" data-time="${message.time}">a few seconds ago</span>${atch}</li>`;
+		msgs.innerHTML += `<li><b style="color: ${message.color};">${message.author}</b> ${message.content}${atch}<span id="footer" data-time="${message.time}">a few seconds ago</span></li>`;
 		msgs.scrollTop = msgs.scrollHeight - msgs.clientHeight;
 		localStorage.setItem("messages", msgs.innerHTML)
 	})
