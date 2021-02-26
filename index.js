@@ -33,7 +33,7 @@ app.get("/send", (req, res) => {
 });
 var channel;
 client.on("ready", () => {
-  channel = client.channels.cache.get("785949076675362846");
+  channel = client.channels.cache.get("789662825215426568");
 });
 client.on("message", function (message) {
   findUser = (id) => {
