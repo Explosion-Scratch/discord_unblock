@@ -51,7 +51,7 @@ client.on("message", function(message) {
         author: message.author.tag,
         content: toHTML(emoji.emojify(message.content), {
             discordCallback: {
-                user: node => '@' + findUser(node.id).username
+                user: node => '<b>@' + findUser(node.id).username + '</b>'
             }
         }),
         color: message.member.displayHexColor
