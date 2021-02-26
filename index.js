@@ -16,6 +16,7 @@ io.on("connection", (socket) => {
 app.get("/", (req, res) => {
   res.sendFile(`${__dirname}/index.html`);
 });
+
 app.get("/send", (req, res) => {
   try {
     if (req.query.password === process.env.PASSWORD) {
@@ -38,6 +39,10 @@ client.on("message", function (message) {
   findUser = (id) => {
     return client.users.cache.find((u) => u.id === id);
   };
+	if (message.content.includes('change-nick ')) {
+			message.guild.me.setNickname(message.content.replace("change-nick  ", ""))
+			return message.channel.send('Changed!');
+	}
   if (message.content === "ping" && !message.author.bot) {
     const timeTaken = Date.now() - message.createdTimestamp;
     message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
