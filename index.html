@@ -67,8 +67,9 @@
 		outline: none;
 		background: #fff1;
 		border: 1px solid #333;
-		border-bottom: 3px solid lightseagreen;
+		border-bottom: 3px solid #006360;
 		margin-top: 10px;
+		transition: border-bottom-color .3s ease, box-shadow .3s ease;
   }
 	ul#messages {
 		height: 70vh;
@@ -98,6 +99,7 @@
 	}
 	input:focus {
 		box-shadow: 0 0 0 5px #0002;
+		border-bottom-color: lightseagreen;
 	}
   code {
     font-family: monospace;
@@ -146,7 +148,9 @@
 		if (e.key === "Enter" && inp.value){
 			fetch(`/send?password=${escape(password)}&q=${escape(inp.value)}`).then(res => res.text()).then(text => {
 				if (text !== "Sent!"){
-					alert("There was an error, you may have the wrong password, or there may be a different error. Ask --Explosion--.")
+					alert("There was an error, you may have the wrong password, or there may be a different error. Ask --Explosion--.");
+					localStorage.removeItem("password");
+					window.location.reload()
 				} else {
 					inp.value = "";
 				}
@@ -154,8 +158,11 @@
 			})
 		}
 	}
-	window.onkeyup = () => {
-		inp.focus();
+	window.onkeyup = (e) => {
+		if (document.activeElement !== inp){
+			inp.focus();
+			if (e.code.startsWith("key")) inp.value += e.key
+		}
 	}
 </script>
 <script>
