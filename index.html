@@ -1,20 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.2/socket.io.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.2/socket.io.js">
+	</script>
 	<script src="https://cdn.jsdelivr.net/npm/bijou.js@v6.3.3" type="module"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js">
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js" integrity="sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX/huVbQB9zjODtYpxaVtIaAkpetoiyV2eqWbvxMH9fiSv5enX7bw==" crossorigin="anonymous"></script>
 	<title>Send a message</title>
 </head>
+
 <body>
 	<div class="container">
+    <select style="background-color:#222" id="channels" onchange="channelChange(this)">
+  </select>
 		<ul id="messages"></ul>
 		<input type="text" placeholder="Send a message" autofocus>
 	</div>
+  
 </body>
-</html>	
+</html>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
 	* {
@@ -75,6 +83,15 @@
 		height: 70vh;
 		overflow: scroll;
 	}
+	select {
+		transition: box-shadow .3s ease;
+		padding: 10px;
+		border-radius: 4px;
+		border: 1px solid lightseagreen;
+	}
+	select:focus {
+		box-shadow: 0 0 0 5px #fff1;
+	}
 	ul#messages li {
 		list-style: none;
 		padding: 15px;
@@ -125,8 +142,17 @@
 		font-size: 12px;
 	}
 	.hljs{display:block;overflow-x:auto;padding:.5em;border-radius:4px;color:var(--header-secondary);-webkit-text-size-adjust:none;-moz-text-size-adjust:none;-ms-text-size-adjust:none;text-size-adjust:none}.hljs-comment,.hljs-quote{color:var(--interactive-muted)}.hljs-addition,.hljs-keyword,.hljs-selector-tag{color:#859900}.hljs-doctag,.hljs-literal,.hljs-meta .hljs-meta-string,.hljs-number,.hljs-regexp,.hljs-string{color:#2aa198}.hljs-name,.hljs-section,.hljs-selector-class,.hljs-selector-id,.hljs-title{color:#268bd2}.hljs-attr,.hljs-attribute,.hljs-class .hljs-title,.hljs-template-variable,.hljs-type,.hljs-variable{color:#b58900}.hljs-bullet,.hljs-link,.hljs-meta,.hljs-meta .hljs-keyword,.hljs-selector-attr,.hljs-selector-pseudo,.hljs-subst,.hljs-symbol{color:#cb4b16}.hljs-built_in,.hljs-deletion{color:#dc322f}.hljs-formula{background:#073642}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}
+
+  li img, li video {
+		border-radius: 5px;
+		width: 100%;
+		max-width: 350px;
+    height: auto;
+    padding-top: 4px;
+}
 </style>
 <script>
+  var channel = 0;
 	const inp = document.querySelector("input[type='text']");
 	const msgs = document.querySelector("ul#messages");
 	msgs.innerHTML = localStorage.getItem("messages") || "";
@@ -134,8 +160,33 @@
 	const password = localStorage.getItem("password") || prompt("Password");
 	localStorage.setItem('password', password);
   var socket = io();
+  socket.on("embed", (embed) => {
+		let fields = "";
+		for (let field of embed.field || []) {
+      fields += `<h5 class="embed_field_title">${field.name}<h5>
+      <p class="embed_field_value">${field.value}</p>`
+    }
+		if (fields){
+			fields = `<div class="embed_fields">${fields}</div>`
+		}
+    msgs.innerHTML += `
+		<li class='embed' style="border-left: 3px solid #${embed.color};">
+			<h6 class="embed_author">${ (new showdown.Converter()).makeHtml(embed.author) || ""}</h6>
+			<h4 class="embed_title">${ (new showdown.Converter()).makeHtml(embed.title) || ""}</h4>
+			<p class="embed_text">${ (new showdown.Converter()).makeHtml(embed.description) || ""}</p>
+			${fields}
+		</li>`
+    localStorage.setItem("messages", msgs.innerHTML)
+  })
 	socket.on("message", (message) => {
-		msgs.innerHTML += `<li><b style="color: ${message.color};">${message.author}</b> ${message.content}<span id="footer" data-time="${message.time}">a few seconds ago</span></li>`;
+    let atch = ''
+    for (attachment of message.attachments) {
+			fileExtension = attachment.name.replace(/^.*\./, '');
+			if (fileExtension == 'mp4' || fileExtension == 'webm' || fileExtension == 'mov') {atch += `<video controls src="${attachment.attachment}"></video>`} else {
+				atch += `<a href="${attachment.attachment}"><img src="${attachment.attachment}"></a>`
+			}
+    }
+		msgs.innerHTML += `<li channel='${message.channel}' style="display: ${message.channel === channel ? "block" : "none"}"><b style="color: ${message.color};">${message.author}</b>: ${message.content}${atch}<span id="footer" data-time="${message.time}">a few seconds ago</span></li>`;
 		msgs.scrollTop = msgs.scrollHeight - msgs.clientHeight;
 		localStorage.setItem("messages", msgs.innerHTML)
 	})
@@ -146,7 +197,7 @@
 	}, 1000)
 	inp.onkeyup = (e) => {
 		if (e.key === "Enter" && inp.value){
-			fetch(`/send?password=${escape(password)}&q=${escape(inp.value)}`).then(res => res.text()).then(text => {
+			fetch(`/send?password=${escape(password)}&q=${escape(inp.value)}&c=${channel}`).then(res => res.text()).then(text => {
 				if (text !== "Sent!"){
 					alert("There was an error, you may have the wrong password, or there may be a different error. Ask --Explosion--.");
 					localStorage.removeItem("password");
@@ -167,4 +218,37 @@
 			console.log(e.keyCode)
 		}
 	}
+  ch = {}
+  socket.on("channels", (c)=>{
+    ch = c;
+    let select = document.getElementById("channels");
+    for(var key in c) {
+      f = document.createElement("option");
+      f.innerText = key
+      if (c[0] === c[key]) {
+        f.selected="selected"
+      }
+      select.appendChild(f)
+      //console.log(`${key}: ${c[key]}`);
+    } 
+    channel = c[0];
+		channelChange(document.querySelector("select#channels"))
+  });
+  function channelChange(e) {
+    //console.log(e.value)
+    channel = ch[e.value];
+		let list_items = document.querySelectorAll("ul#messages li");
+		for (let i = 0; i < list_items.length; i++){
+			let li = list_items[i];
+			//Now we need to implement that attribute (channel) with the channel id of every new message.
+			if (li.getAttribute("channel") != channel) {
+				li.style.display = "none";
+			} else {
+				li.style.display = "block";
+			}
+		}
+  };
+	document.querySelector("select#channels").onchange = channelChange(document.querySelector("select#channels"))
+  setInterval(() => channelChange(document.getElementById("channels")), 1);//Just to be safe
+	//Idk what that was lol auto sugges lol watch i can do it again sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX
 </script>
