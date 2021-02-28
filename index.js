@@ -3,7 +3,7 @@ const client = new Discord.Client();
 const express = require("express");
 const app = express();
 const http = require("http").Server(app);
-const io = require("socket.io")(http);
+const io = require("socket.io")(http)
 const { parser, htmlOutput, toHTML } = require("discord-markdown");
 const emoji = require("discord-emoji-converter");
 
@@ -14,20 +14,44 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("user disconnected");
   });
+  socket.on("new_message", (message) => {
+    
+  console.log('Hi')
+    console.log(message);
+    console.log(socket)
+  try {
+    if (message.password === process.env.PASSWORD) {
+      
+      
+      channel=client.channels.cache.get(message.c);
+      channel.send(`**${message.u}**: ${message.q}`);
+      socket.emit('success', 'Sent')
+    } else {
+      socket.emit('error', 'Invalid password')
+      console.log("Invalid password");
+    }
+  } catch (e) {
+    console.error(e.stack);
+    socket.emit('error', e.stack)
+    //res.send("Error sending message! \n\n" + e.stack);
+  }
+
+})
+
 });
 app.get("/", (req, res) => {
   res.sendFile(`${__dirname}/index.html`);
 });
 var channel;
 var h={}
-app.get("/send", (req, res) => {
+/*app.get("/send", (req, res) => {
   console.log(req.query);
   try {
     if (req.query.password === process.env.PASSWORD) {
       res.send("Sent!");
       
       channel=client.channels.cache.get(req.query.c);
-      channel.send(req.query.q);
+      channel.send(`**${req.query.u}**: ${req.query.q}`);
     } else {
       res.send("Invalid password!");
       console.log("Invalid password");
@@ -36,7 +60,7 @@ app.get("/send", (req, res) => {
     console.error(e.stack);
     res.send("Error sending message! \n\n" + e.stack);
   }
-});
+});*/
 
 client.on("ready", () => {
   channel = client.channels.cache.get("798550831292874815");
@@ -80,9 +104,9 @@ client.on("message", function (message) {
   io.emit("embed", embed)
 }
 
-  app.get("/send", (req, res) => {
-    channel.send(req.query.q);
-  });
+  /*app.get("/send", (req, res) => {
+    channel.send(`**${req.query.u}**: req.query.q`);
+  });*/
 });
 client.login(process.env.BOT_TOKEN);
 http.listen(3000, () => {
