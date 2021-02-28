@@ -158,7 +158,10 @@
 	msgs.innerHTML = localStorage.getItem("messages") || "";
 	msgs.scrollTop = msgs.scrollHeight - msgs.clientHeight;
 	const password = localStorage.getItem("password") || prompt("Password");
+	const username = localStorage.getItem("username") || prompt("Username");
+
 	localStorage.setItem('password', password);
+  localStorage.setItem('username', username);
   var socket = io();
   socket.on("embed", (embed) => {
 		let fields = "";
@@ -195,18 +198,25 @@
 			el.innerText = moment(el.getAttribute("data-time")).fromNow();
 		})
 	}, 1000)
+  socket.on('error', (message) => {	
+      if (message == 'Invalid password') {
+        alert("Invalid password. Ask --Explosion--.");
+          localStorage.removeItem("password");
+					window.location.reload()
+
+      } else {
+        alert('There was an error.')
+        console.warn('Server side error: ' + message)
+      }
+
+})
+  socket.on('success', (message) => {	
+inp.value = '';
+})
+
 	inp.onkeyup = (e) => {
 		if (e.key === "Enter" && inp.value){
-			fetch(`/send?password=${escape(password)}&q=${escape(inp.value)}&c=${channel}`).then(res => res.text()).then(text => {
-				if (text !== "Sent!"){
-					alert("There was an error, you may have the wrong password, or there may be a different error. Ask --Explosion--.");
-					localStorage.removeItem("password");
-					window.location.reload()
-				} else {
-					inp.value = "";
-				}
-				console.log(text);
-			})
+      socket.emit("new_message", {"password":escape(password), "q": inp.value, "c": channel, "u": username})
 		}
 	}
 	window.onkeyup = (e) => {
@@ -222,6 +232,7 @@
   socket.on("channels", (c)=>{
     ch = c;
     let select = document.getElementById("channels");
+    select.innerHTML = ''
     for(var key in c) {
       f = document.createElement("option");
       f.innerText = key
