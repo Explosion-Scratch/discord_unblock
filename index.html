@@ -216,7 +216,7 @@ inp.value = '';
 
 	inp.onkeyup = (e) => {
 		if (e.key === "Enter" && inp.value){
-      socket.emit("new_message", {"password":escape(password), "q": inp.value, "c": channel, "u": username})
+      socket.emit("new_message", {"password":password, "q": inp.value, "c": channel, "u": username})
 		}
 	}
 	window.onkeyup = (e) => {
