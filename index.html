@@ -189,7 +189,7 @@
 				atch += `<a href="${attachment.attachment}"><img src="${attachment.attachment}"></a>`
 			}
     }
-		msgs.innerHTML += `<li channel='${message.channel}' style="display: ${message.channel === channel ? "block" : "none"}"><b style="color: ${message.color === "000000" ? "00bbbb" : message.color};">${message.author}</b>: ${message.content}${atch}<span id="footer" data-time="${message.time}">a few seconds ago</span></li>`;
+		msgs.innerHTML += `<li channel='${message.channel}' style="display: ${message.channel === channel ? "block" : "none"}"><b style="color: ${message.color == "#000000" ? "#00bbbb" : message.color};">${message.author}</b>: ${message.content}${atch}<span id="footer" data-time="${message.time}">a few seconds ago</span></li>`;
 		msgs.scrollTop = msgs.scrollHeight - msgs.clientHeight;
 		localStorage.setItem("messages", msgs.innerHTML)
 	})
