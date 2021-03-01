@@ -20,7 +20,7 @@
 		<ul id="messages"></ul>
 		<input type="text" placeholder="Send a message" autofocus>
 	</div>
-  
+
 </body>
 </html>
 <style>
@@ -198,7 +198,7 @@
 			el.innerText = moment(el.getAttribute("data-time")).fromNow();
 		})
 	}, 1000)
-  socket.on('error', (message) => {	
+  socket.on('error', (message) => {
       if (message == 'Invalid password') {
         alert("Invalid password. Ask --Explosion--.");
           localStorage.removeItem("password");
@@ -210,13 +210,13 @@
       }
 
 })
-  socket.on('success', (message) => {	
+  socket.on('success', (message) => {
 inp.value = '';
 })
 
 	inp.onkeyup = (e) => {
 		if (e.key === "Enter" && inp.value){
-      socket.emit("new_message", {"password":escape(password), "q": inp.value, "c": channel, "u": username})
+      socket.emit("new_message", {"password":password, "q": inp.value, "c": channel, "u": username})
 		}
 	}
 	window.onkeyup = (e) => {
@@ -241,7 +241,7 @@ inp.value = '';
       }
       select.appendChild(f)
       //console.log(`${key}: ${c[key]}`);
-    } 
+    }
     channel = c[0];
 		channelChange(document.querySelector("select#channels"))
   });
